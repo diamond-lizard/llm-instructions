@@ -228,12 +228,8 @@ Version: 3.0.0
     - Do NOT create sibling headings with the section title as a repeated prefix.
     - Look for structural indicators: colons after category names, indentation, explicit grouping, or contextual relationship among items.
 
-46. Forbidden Citation, Attribution, and Agent Tracking Markers
+46. Forbidden Citation, Attribution, and Agent Tracking Markers (Absolute Agent Override)
     - All forms of explicit source citation, attribution, tracking markers, and agent-added metadata are strictly forbidden in the final transformed document.
-
-    This prohibition includes, but is not limited to:
-    - Inline Source References: Any bracketed or parenthetical references such as `[1]`, `[1, 2]`, `(Smith, 2024)`, or any custom formats like `[doc-ref]`.
-    - Footnote / Endnote Marker: Any markers used for standard bibliographic referencing. (Note: Org footnotes are already forbidden by Rule 9).
-    - Agent/Tool Metadata: Any marker used by the transformation agent for tracking, traceability, or debugging, such as ``, ``, or similar internal identifiers.
-
-    No text that serves the sole purpose of referencing the source of the content (whether internal or external) is permitted in the document body or headings. Content must be presented as a standalone artifact.
+    - The transformed output MUST be presented as a standalone artifact, without external references.
+    - Prohibition includes Inline Source References (e.g., `[1]`, `(Smith, 2024)`), Footnote / Endnote Markers, and Agent/Tool Metadata (e.g., ``).
+    - No text whose sole purpose is source referencing is permitted in the document body or headings.
