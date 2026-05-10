@@ -48,6 +48,8 @@ Some lines start with an identifier from a fixed family, e.g., `- **TASK-09600**
 - A bundle is something like: "produce the README; the README serves as the canonical install document; the README must allow a fresh reader to bring the bridge up; the README captures the operational contract; ..." — multiple discrete declarations, each independently meaningful.
 - A genuine single unit is something like: "implement the cache directory verification function with the following exact behavior..." — one action, with supporting detail clarifying the same action.
 
+**Subject-context preservation rule.** When you split a bundle into N siblings, each sibling MUST carry enough subject context to be understandable on its own. The bundle's prose typically establishes the subject early (e.g., "produce the README that..." establishes the README as the subject) and subsequent clauses may use elliptical references ("the README captures...", "captures the operational contract..."). When you extract one of those subsequent clauses into its own sibling, you MUST restore the elided subject. A sibling that reads "Capture the operational contract once, in the same directory as the source." is broken: it does not say WHAT captures the contract, nor WHICH source's directory. The fixed sibling reads "Capture the operational contract once, in the README, which lives alongside the bridge's source code in the project repository (FILE-0500)." Always re-read each new sibling in isolation; if you cannot understand the sibling without scrolling back to its peers, add the missing subject context.
+
 **If the line is a bundle:** Split it. Each new identifier-prefixed line carries one of the discrete units. The original identifier disappears.
 
 **If the line is a single unit:** Do not split it into multiple identifier-prefixed lines (that would create fake siblings). Instead, consider Section 6 (extract long content to a Referenced Lists section). If extraction is also infeasible, leave the line intact and record it as skipped.
@@ -75,9 +77,9 @@ Some long lines describe a single semantic unit but contain a sub-clause that is
 **Procedure:**
 
 1. Append a top-level section to the end of the document: `## N. Referenced Lists` (where N is the next available section number). Write a brief intro paragraph explaining its purpose.
-2. Under that section, create a `### Descriptive Heading` for each extracted body. The heading text is the long-term identity of the extracted material; it must be unambiguous, distinct, and grep-friendly.
+2. Under that section, create a `### N.M Descriptive Heading` for each top-level extracted body, where N is the section number from step 1 and M is a sequential index (8.1, 8.2, 8.3, ...). Sub-bodies inside an extracted body use deeper levels (e.g., `#### N.M.K Descriptive Heading` for 8.1.1, 8.1.2, ...). The heading text combined with its hierarchical number is the long-term identity of the extracted material; it must be unambiguous, distinct, and grep-friendly.
 3. Move the long content under that heading in any Markdown structure that suits it — sub-headings (`####`), bulleted lists, prose paragraphs, etc.
-4. In the original line, replace the moved content with a short reference: `... per the section "Descriptive Heading" below.` Quote the heading verbatim, no Markdown link syntax, no section number.
+4. In the original line, replace the moved content with a short reference: `... per the section "N.M Descriptive Heading" below.` Quote the heading verbatim including its hierarchical number prefix, no Markdown link syntax.
 5. Verify the heading text is unambiguous: it must occur in the document only at the heading line itself and at citation sites that quote it. Pick a heading text that is distinctive enough to satisfy this — generic words like "Notes" or "Details" do not satisfy it.
 
 **When extraction is the right tool:**
@@ -161,6 +163,7 @@ Apply this workflow strictly:
    - Confirm backup approach (e.g., `<filename>.bak` for non-version-controlled files).
    - Confirm cadence and approval mode (one-at-a-time vs. batched; pause-for-approval vs. autonomous), per Section 2 item 4.
    - Read the entire file.
+   - Review Section 16 to choose the right editing tool for each kind of edit you will make in this run.
 2. **Make the initial backup.**
 3. **Iterate until done:**
    - Measure all lines; pick the longest line strictly over the target that is not on the skip list.
@@ -222,3 +225,38 @@ The audit trail is the proof that the work was done correctly. Without it, neith
 - **Forgetting to refresh the backup after verification.** The next iteration's diff will show two iterations' worth of changes, masking the most recent one.
 
 Read this guide before performing line-splitting work. The procedures here are designed to produce a correct, faithful, fully-audited revision; deviating from them is how splits go wrong.
+
+## 16. Editing Tools and Long-Input Handling
+
+This section describes which editing tool to use for each kind of edit. The decision tree below assumes the agent has the `ed` editor available (per the repository's `.github/ed-non-interactive-guide.md`), a `bash` tool with heredoc support, and a `create` file-creation tool.
+
+### 16.1 Default tool
+
+Use sync `ed` invoked via a quoted bash heredoc for every edit by default. Sync `ed` is the fastest tool and the one mandated by the ed editing guide.
+
+### 16.2 When to use async `ed`
+
+Use async `ed` (started via `bash mode="async"` and fed via `write_bash`) ONLY when the edit's content contains backtick characters. Per the ed editing guide's "MANDATORY: Interactive `ed` for Backtick Content" section, heredocs containing backticks are blocked by the shell security filter even inside single-quoted heredocs. Async `ed` bypasses this filter because the input goes directly to `ed`'s stdin with no shell interpretation.
+
+Async `ed` is slower than sync `ed` because of the round-trip per write_bash call. Do not use it when sync `ed` would also work.
+
+### 16.3 When to use the `create` tool
+
+The bash heredoc input has a TTY-imposed line-length limit (approximately 4 KB per single source line). When you need to insert or restore a single document line whose character length exceeds this limit, sync `ed` via heredoc fails: the heredoc's content gets truncated by the TTY before reaching `ed`.
+
+In that case, write the long line's content to a temporary file using the `create` tool (e.g., `/tmp/<descriptive-name>.txt`), then use sync `ed`'s `r` (read) command to read that file's content into the buffer at the chosen position. After the read, delete the temporary file. The `r` command reads the file contents as-is, so the long single line is inserted intact with no truncation.
+
+### 16.4 Decision tree
+
+```
+Is the new content a single line longer than ~4 KB?
+├── YES → Use the create tool to write a temp file, then ed `r` to read it in.
+└── NO  → Does the content contain backticks?
+         ├── YES → Use async `ed` via write_bash.
+         └── NO  → Use sync `ed` via bash heredoc.
+```
+
+### 16.5 Verification after long-line edits
+
+When the long-line content was inserted via the temp-file-and-read path, run a length check on the inserted line immediately after the edit using `bin/measure-line-lengths.py` (or equivalent). The measured length must equal the source content's length. If it differs, the read failed; restore the backup and retry. Delete the temp file only after the verification passes.
+
