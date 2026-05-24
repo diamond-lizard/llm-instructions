@@ -21,3 +21,5 @@ Layout Rules:
 - Preserve the original wording exactly.
 
 - Do not use timestamps.
+
+- The final output must be easy to read, with clear paragraph breaks for logical changes in topic or speaker.
