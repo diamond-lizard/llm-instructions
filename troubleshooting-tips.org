@@ -96,6 +96,7 @@ When data flows through N stages and output is wrong, don't debug linearly from 
 When something worked before but fails now (or works in one environment but fails in another), explicitly list the differences.
 *** Principle: The bug is almost always in the delta. Comparing "mock vs real," "dev vs prod," or "before vs after" focuses attention on the actual change.
 *** Action: Write down: "What is different?" Then verify each difference until you find the one that matters.
+*** Special case: A cheap, high-yield instance of this is to diff your configuration or environment against a pristine default/stock version. Customizations - especially stale ones carried across upgrades, which may reference things that no longer exist - are prime suspects.
 ** 18. Read the Integration Code Before Adding Diagnostics
 Before instrumenting code with debug statements, read the source of the components involved - especially at integration points.
 *** Principle: Five minutes reading often reveals assumptions, edge cases, or transformations that explain the bug without any debugging.
@@ -112,6 +113,7 @@ If a system appears unresponsive, ask when (not just what) output appears. Buffe
 When a function fails unexpectedly, enable the language's debugger or traceback facility and reproduce the failure before theorizing about the cause.
 *** Principle: A stack trace tells you exactly where the failure is. Without one, you are guessing which layer is broken, and each guess costs a full investigate-test cycle. Even experienced developers routinely guess wrong.
 *** Action: Before forming any hypothesis, enable full error reporting (e.g., debugger break-on-error, verbose tracebacks, crash dumps) and trigger the failure once. Read the trace top-to-bottom. Only then decide what to investigate.
+*** Corollary: A trace you have not fully resolved is not yet a trace. Map the fault to a concrete module/symbol (symbolicate the address, read the loaded-module list, resolve the line) before theorizing - an unresolved trace invites guessing the wrong layer. And beware the last-logged-line fallacy: the final operation a system logs before dying is usually the last thing that *succeeded*; the fault is typically the next, unlogged step. Do not infer the culprit from proximity in the log.
 *** Anti-pattern: Theorizing about the cause, implementing a speculative fix, testing it, and discovering it didn't help — then repeating this loop multiple times before finally looking at the actual error.
 ** 22. Check User Customization Before Blaming the System
 When a well-established feature or library function fails, user-injected code is the most likely culprit — not a bug in the library or the system.
@@ -147,3 +149,18 @@ An empty result does not always mean the evidence is absent. It can also mean th
 *** Principle: A failed lookup is evidence about the search method as much as about the underlying reality.
 *** Action: If a precise search returns nothing, retry with a broader, less constrained search built from the most literal identifying details, then refine once you find how the evidence appears.
 *** Anti-pattern: Treating zero results from one narrowly constructed search as proof that no record exists.
+** 29. Order Tests by Information Per Effort (Cheapest Hypothesis-Halving Test First)
+Debugging efficiency depends less on which tests you run than on the order you run them in. The most common time sink is iterating expensively inside one hypothesis before running the cheap test that would have eliminated half the possibilities at once.
+*** Principle: A five-minute test that rules out an entire category is worth more than an hour of variations within a single theory. The best next test maximizes (hypotheses eliminated / cost), not (confidence gained in the theory you already favor).
+*** Action: Before acting on any hypothesis, enumerate the candidate causes and the tests available. For each test, estimate how much of the space it eliminates and what it costs, then run the highest-ratio test first. Two moves are almost always high-ratio: resolving the fault to a concrete location (tip #21) and diffing against a known-good baseline (tip #17).
+*** Anti-pattern: Running a long sequence of same-subsystem tweaks - each a full investigate-test cycle - while a single cheaper test that would have redirected the whole investigation sits un-run.
+** 30. Ineffective Fixes Are Evidence
+A change that produces no effect is not a wasted step - it is a measurement. Repeated no-ops carry information about where the cause is *not*.
+*** Principle: When several successive changes within one subsystem leave the symptom unchanged, that pattern is strong evidence the cause lies in a *different* subsystem. Continuing to vary parameters in the same area is low-information.
+*** Action: After 2-3 inert attempts in one area, stop iterating within it and run a single test that eliminates the whole area (tip #6). Explicitly track which categories your attempts have actually ruled out, so a run of no-ops triggers a pivot rather than more of the same.
+*** Anti-pattern: Reading each ineffective fix as "not that specific parameter, try the next one in the same subsystem," instead of "this whole subsystem may be irrelevant."
+** 31. A Workaround Is Not a Root Cause
+Making the visible symptom disappear is seductive and creates pressure to stop. But a change that only masks the symptom leaves the true cause active, and it often resurfaces later as a *different* symptom you then investigate as an unrelated problem.
+*** Principle: "Symptom resolved" and "cause found" are different states. A workaround suppresses one manifestation; the root cause can still produce others. Distinct-looking symptoms - even ones separated in time or spanning different domains - may share a single upstream cause.
+*** Action: After any fix, ask "did I remove the *cause*, or just this *symptom*?" If it is a workaround, keep the root cause open. When a new symptom appears, first ask whether it could share a cause with an earlier "resolved" one before treating it as independent. (Complements tip #11, fix at the source; and tip #23, verify the hypothesis explains the full failure.)
+*** Anti-pattern: Declaring victory when the symptom vanishes, discarding the investigation, then starting a fresh unrelated-looking investigation later for what turns out to be the same root cause.
