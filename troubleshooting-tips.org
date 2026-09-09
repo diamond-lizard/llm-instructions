@@ -164,3 +164,78 @@ Making the visible symptom disappear is seductive and creates pressure to stop. 
 *** Principle: "Symptom resolved" and "cause found" are different states. A workaround suppresses one manifestation; the root cause can still produce others. Distinct-looking symptoms - even ones separated in time or spanning different domains - may share a single upstream cause.
 *** Action: After any fix, ask "did I remove the *cause*, or just this *symptom*?" If it is a workaround, keep the root cause open. When a new symptom appears, first ask whether it could share a cause with an earlier "resolved" one before treating it as independent. (Complements tip #11, fix at the source; and tip #23, verify the hypothesis explains the full failure.)
 *** Anti-pattern: Declaring victory when the symptom vanishes, discarding the investigation, then starting a fresh unrelated-looking investigation later for what turns out to be the same root cause.
+** 32. Name-Based Search Finds Names, Not Actors
+When searching for what performs an action — who calls a function, who
+writes a file, who invalidates a cache — text and name search has a
+structural blind spot: the same actor is referenced under different
+names through aliases, re-exports, wrappers, dependency injection, and
+registries.
+*** Principle
+A name search enumerates references through the mapping the search
+assumes. Zero results for "who performs X" means "no reference under
+these names," not "nothing performs X."
+*** Action
+Enumerate the indirection mechanisms of the language or framework
+(import aliases, re-exports, wrappers, injected references) and search
+those too, or search for the action's observable effects instead of its
+name. Read the body of any reset, init, or refresh function near the
+symptom path before concluding what it preserves or clears.
+*** Anti-pattern
+Concluding "only A and B invalidate the cache" from a caller search on
+one function name, when a dozen call sites reach it through an aliased
+import.
+** 33. Described Behavior Is Not Behavior
+Comments, documentation, changelogs, and dashboards are claims about
+intended or historical behavior, not observations of current behavior.
+Divergence occurs in both directions: code can fail to do what the docs
+promise, and a comment can misdescribe what the adjacent code executes.
+*** Principle
+Any description that is load-bearing for a conclusion is a claim
+requiring verification against the current artifact — one hop of
+reading or one discriminating test. A verified divergence between
+description and behavior is itself a finding, not a tiebreaker.
+*** Action
+Before citing a comment or doc line as the account of what code does,
+read what the code actually does. When docs and behavior diverge,
+record the divergence alongside the bug: a promise the implementation
+does not keep is part of the defect.
+*** Anti-pattern
+Citing a code comment ("this mirrors the reset flow, minus one step")
+as the authoritative account of what the adjacent calls execute,
+without reading their bodies.
+** 34. Verification Re-Attaches When a Claim Leaves You
+Advice, summaries, and filed reports are new claims even when assembled
+from previously verified facts. The connection between two verified
+facts is itself an unverified claim until it has been checked.
+*** Principle
+Verification performed at discovery time does not transfer to
+composition time. The moment a claim is composed into advice or an
+artifact that another party will act on, the checks that conclusion
+stands on must be re-run.
+*** Action
+Before sending analysis or advice that depends on recalled facts,
+re-run the specific checks the conclusion rests on — especially the
+read path that the advice tells someone else to rely on. Carry
+confidence labels into the artifact; a caveat stated in conversation
+but dropped from the filed text is a claim promoted without evidence.
+*** Anti-pattern
+Advising "put the config at <dir>/settings.conf; the test points that
+option at the temp directory" from memory, when the lookup path in
+context reads a process-global resolver that the option never reaches.
+** 35. Confirm the Artifact You Read Is the Artifact That Runs
+Source read from a branch, docs from a website, and config samples may
+not correspond to the installed build or live configuration.
+Conclusions about "the system" are conclusions about a version.
+*** Principle
+Pin provenance before diagnosing. Match the running version or build to
+the source and documentation being read, and re-check the match after
+any upgrade or reinstall.
+*** Action
+Compare version output, build timestamps, and tag-pinned source
+references against each other before relying on static reading for
+dynamic claims. When the running artifact cannot be inspected, label
+every version-sensitive conclusion as provisional.
+*** Anti-pattern
+Diagnosing against the latest branch while the deployed binary is two
+releases old — or reading current source for an install that was last
+touched before the relevant feature existed.
