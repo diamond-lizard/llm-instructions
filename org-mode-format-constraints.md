@@ -1,5 +1,5 @@
 # Org‑Mode Formatting Specification
-Version: 3.0.0
+Version: 4.0.0
 
 1. Top-Level Heading
    - Exactly one top-level Org heading (`* <Title>`); it MUST be descriptive.
@@ -171,21 +171,22 @@ Version: 3.0.0
     - No exceptions, thresholds, externalization, summarization, hashing, windowing, or elision beyond Rules 26–28 are permitted.
     - Performance or size concerns are accepted trade-offs.
 
-38. Specification Versioning
-    - This specification uses Semantic Versioning (MAJOR.MINOR.PATCH).
+38. Org‑Mode Formatting Specification Versioning
+    - This specification (the Org‑Mode Formatting Specification itself) uses Semantic Versioning (MAJOR.MINOR.PATCH).
     - MAJOR: Backward-incompatible rule changes (previously valid documents may become invalid).
     - MINOR: Backward-compatible additions or relaxations (previously valid documents remain valid).
     - PATCH: Editorial corrections that do not change validation outcomes.
     - Each published change increments exactly one component.
-    - Published versions are immutable.
+    - Published versions of this specification are immutable.
+    - The documents that comply with this specification should not use versioning.
 
 39. Changelog
     - No changelog section is maintained.
-    - Version history is discoverable only through repository history (e.g., Git tags or commit log).
+    - Version history of the Org‑Mode Formatting Specification is discoverable only through repository history (e.g., Git tags or commit log).
     - Tooling must not expect or parse an in-document changelog.
 
 40. Version Declaration Line
-    - The first non-blank line immediately following the top-level heading in this specification is `Version: MAJOR.MINOR.PATCH`.
+    - The first non-blank line immediately following the top-level heading in the Org‑Mode Formatting Specification is `Version: MAJOR.MINOR.PATCH`.
     - This line is the canonical in-file source of the current specification version.
     - No other lines may begin with `Version:` elsewhere in this document.
 
