@@ -1,5 +1,5 @@
 # Org‑Mode Formatting Specification
-Version: 4.0.0
+Version: 5.0.0
 
 1. Top-Level Heading
    - Exactly one top-level Org heading (`* <Title>`); it MUST be descriptive.
@@ -15,7 +15,7 @@ Version: 4.0.0
    - No blank line immediately before any heading, regardless of heading level or preceding content. This restriction is **absolute** and overrides all conventional document spacing practices for visual separation.
    - No blank line immediately after any heading.
    - A heading MUST be followed *directly* by its first prose line, a block directive (`#+BEGIN_...`), or the next child/sibling heading.
-   - The ONLY allowed blank lines in the document's prose are single blank lines used to separate adjacent paragraphs, as governed by Rule 29.
+   - The ONLY allowed blank lines in the document's prose are single blank lines used to separate adjacent paragraphs, as governed by Rule 29. Distinct paragraphs MUST be separated by exactly one blank line: consecutive prose lines with no intervening blank line form a single paragraph.
 
 4. Enumerations as Headings (List Syntax Prohibited)
    - All Org list constructs are forbidden (unordered: `-`, `+`, `*`; ordered: `1.`, `2.`; checkboxes; description lists `::`).
@@ -124,9 +124,10 @@ Version: 4.0.0
     - Truncation, elision, or omission markers are forbidden.
     - If any output is shown, include the entire captured output in full.
 
-29. Consecutive Blank Prose Lines
+29. Consecutive Blank Prose Lines and Paragraph Separation
     - At most one blank prose line may appear consecutively.
     - Two or more sequential blank lines in prose are forbidden.
+    - A single blank line between adjacent paragraphs is REQUIRED. Prose lines with no blank line between them form a single paragraph, so any two distinct paragraphs MUST be separated by exactly one blank line.
 
 30. External Links / URLs
     - External URLs may appear either as bare URLs or using Org link syntax (`[[url]]` or `[[url][label]]`).
