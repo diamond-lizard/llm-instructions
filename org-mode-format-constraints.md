@@ -1,5 +1,5 @@
 # Org‑Mode Formatting Specification
-Version: 3.0.0
+Version: 5.0.0
 
 1. Top-Level Heading
    - Exactly one top-level Org heading (`* <Title>`); it MUST be descriptive.
@@ -15,7 +15,7 @@ Version: 3.0.0
    - No blank line immediately before any heading, regardless of heading level or preceding content. This restriction is **absolute** and overrides all conventional document spacing practices for visual separation.
    - No blank line immediately after any heading.
    - A heading MUST be followed *directly* by its first prose line, a block directive (`#+BEGIN_...`), or the next child/sibling heading.
-   - The ONLY allowed blank lines in the document's prose are single blank lines used to separate adjacent paragraphs, as governed by Rule 29.
+   - The ONLY allowed blank lines in the document's prose are single blank lines used to separate adjacent paragraphs, as governed by Rule 29. Distinct paragraphs MUST be separated by exactly one blank line: consecutive prose lines with no intervening blank line form a single paragraph.
 
 4. Enumerations as Headings (List Syntax Prohibited)
    - All Org list constructs are forbidden (unordered: `-`, `+`, `*`; ordered: `1.`, `2.`; checkboxes; description lists `::`).
@@ -124,9 +124,10 @@ Version: 3.0.0
     - Truncation, elision, or omission markers are forbidden.
     - If any output is shown, include the entire captured output in full.
 
-29. Consecutive Blank Prose Lines
+29. Consecutive Blank Prose Lines and Paragraph Separation
     - At most one blank prose line may appear consecutively.
     - Two or more sequential blank lines in prose are forbidden.
+    - A single blank line between adjacent paragraphs is REQUIRED. Prose lines with no blank line between them form a single paragraph, so any two distinct paragraphs MUST be separated by exactly one blank line.
 
 30. External Links / URLs
     - External URLs may appear either as bare URLs or using Org link syntax (`[[url]]` or `[[url][label]]`).
@@ -171,21 +172,22 @@ Version: 3.0.0
     - No exceptions, thresholds, externalization, summarization, hashing, windowing, or elision beyond Rules 26–28 are permitted.
     - Performance or size concerns are accepted trade-offs.
 
-38. Specification Versioning
-    - This specification uses Semantic Versioning (MAJOR.MINOR.PATCH).
+38. Org‑Mode Formatting Specification Versioning
+    - This specification (the Org‑Mode Formatting Specification itself) uses Semantic Versioning (MAJOR.MINOR.PATCH).
     - MAJOR: Backward-incompatible rule changes (previously valid documents may become invalid).
     - MINOR: Backward-compatible additions or relaxations (previously valid documents remain valid).
     - PATCH: Editorial corrections that do not change validation outcomes.
     - Each published change increments exactly one component.
-    - Published versions are immutable.
+    - Published versions of this specification are immutable.
+    - The documents that comply with this specification should not use versioning.
 
 39. Changelog
     - No changelog section is maintained.
-    - Version history is discoverable only through repository history (e.g., Git tags or commit log).
+    - Version history of the Org‑Mode Formatting Specification is discoverable only through repository history (e.g., Git tags or commit log).
     - Tooling must not expect or parse an in-document changelog.
 
 40. Version Declaration Line
-    - The first non-blank line immediately following the top-level heading in this specification is `Version: MAJOR.MINOR.PATCH`.
+    - The first non-blank line immediately following the top-level heading in the Org‑Mode Formatting Specification is `Version: MAJOR.MINOR.PATCH`.
     - This line is the canonical in-file source of the current specification version.
     - No other lines may begin with `Version:` elsewhere in this document.
 
