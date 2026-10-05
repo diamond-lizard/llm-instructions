@@ -1,0 +1,162 @@
+* Git Fork Workflow for Clean Upstream Pull Requests
+** Overview
+This guide describes how to keep a fork in sync with its upstream repository
+while making local changes, and how to send clean pull requests upstream. It
+uses a fork named origin and the original repository named upstream. Replace the
+example names and URLs with your own.
+** Why Commits on main Cause Trouble
+If you commit directly on the main branch of your fork, main contains both
+changes meant for upstream and changes that are only yours. The fork can then no
+longer track upstream cleanly, and a pull request opened from main picks up
+every later commit you push to it. Syncing with upstream then requires either a
+merge commit or a force push.
+** Branch Roles
+*** main mirrors upstream main exactly and never receives commits
+Only fast-forward updates from upstream are allowed on this branch. If main
+always equals the upstream main branch, syncing the fork never needs a merge
+commit or a force push.
+*** feature branches carry one upstream pull request each
+Create every feature branch from the upstream main branch, not from your local
+work. This keeps the pull request limited to the commits you intend to send.
+*** local branch holds changes that never go upstream
+This branch is optional. Do your daily work here and merge main into it after
+each sync.
+** One-Time Setup
+*** 1 Add the upstream remote if it is missing
+#+BEGIN_SRC bash
+git remote -v
+git remote add upstream <upstream-repository-url>
+#+END_SRC
+*** 2 Make pulls on main fast-forward only
+With this setting, a pull on main fails instead of silently creating a merge
+commit.
+#+BEGIN_SRC bash
+git config pull.ff only
+git config branch.main.pushRemote origin
+#+END_SRC
+*** 3 Make main equal upstream main
+Run this only after every commit you care about lives on some other branch,
+because the reset discards commits that exist only on main.
+#+BEGIN_SRC bash
+git fetch upstream
+git switch main
+git reset --hard upstream/main
+#+END_SRC
+** Routine Workflows
+*** Sync the fork with upstream
+The push is a fast-forward, so no force is needed.
+#+BEGIN_SRC bash
+git switch main
+git fetch upstream
+git merge --ff-only upstream/main
+git push origin main
+#+END_SRC
+*** Make a change and submit it as an upstream pull request
+**** 1 Create a feature branch from upstream main
+Fetch first so the branch starts from the newest upstream commit. Use one
+branch per pull request, named for the change.
+#+BEGIN_SRC bash
+git fetch upstream
+git switch -c feature/topic upstream/main
+#+END_SRC
+The switch command with the c option creates a new local branch and checks it
+out in one step. Its last argument is the start point: the new branch begins
+at the commit that upstream main currently points to, not at whatever branch
+you had checked out.
+
+The start point is why the fetch comes first. The upstream main reference is
+only a local copy of the remote branch, and it moves only when you fetch.
+Without a start point, the new branch would begin at your current commit,
+which can pull local-only commits into the pull request.
+
+Because the start point is a remote branch, git also sets the new branch to
+track it. The push with the u option in step 5 replaces that, so the branch
+then tracks the fork instead.
+**** 2 Make the changes and commit them on the feature branch
+Edit files, then stage and commit. Make as many commits as the change needs,
+and keep each commit focused on one logical step. Do not commit on main.
+#+BEGIN_SRC bash
+git status
+git add path/to/file
+git commit
+#+END_SRC
+**** 3 Review what the pull request will contain
+This lists exactly the commits and changes that will be sent upstream. If
+anything unrelated appears, move it to another branch before continuing.
+#+BEGIN_SRC bash
+git log --oneline upstream/main..feature/topic
+git diff upstream/main...feature/topic
+#+END_SRC
+**** 4 Pick up new upstream commits if upstream moved on
+This step is optional. If the branch has not been pushed yet, rebase it onto
+upstream main:
+#+BEGIN_SRC bash
+git fetch upstream
+git rebase upstream/main
+#+END_SRC
+If the branch has already been pushed, merge instead, so that no force push
+is needed:
+#+BEGIN_SRC bash
+git fetch upstream
+git merge upstream/main
+#+END_SRC
+**** 5 Push the feature branch to the fork
+The first push sets the tracking branch, so later pushes need only git push.
+#+BEGIN_SRC bash
+git push -u origin feature/topic
+#+END_SRC
+**** 6 Open the pull request on GitHub
+Use the upstream repository as the base and your feature branch on the fork
+as the compare branch. Describe what the change does and why.
+*** Respond to review feedback
+Commit the fixes on the feature branch and push normally. A force push is only
+needed if you choose to rewrite the branch history.
+#+BEGIN_SRC bash
+git switch feature/topic
+git commit
+git push origin feature/topic
+#+END_SRC
+*** Clean up after the pull request is merged
+Sync main first, then delete the feature branch locally and on the fork.
+#+BEGIN_SRC bash
+git switch main
+git fetch upstream
+git merge --ff-only upstream/main
+git push origin main
+git branch -d feature/topic
+git push origin --delete feature/topic
+#+END_SRC
+*** Keep local-only changes
+Create the local branch from main once, commit local-only changes there, and
+merge main into it after each sync. Never create a feature branch from local.
+#+BEGIN_SRC bash
+git switch -c local main
+git merge main
+#+END_SRC
+** Recovering When Commits Were Already Made on main
+*** 1 Copy the commits onto a feature branch based on upstream
+Find the hashes of your own commits with git log, then cherry-pick them. Cherry-
+pick only your own commits and skip any merge commits.
+#+BEGIN_SRC bash
+git fetch upstream
+git switch -c feature/topic upstream/main
+git cherry-pick <commit-hash>
+git push -u origin feature/topic
+#+END_SRC
+*** 2 Reset main to upstream main
+Resetting a main branch that was already pushed requires one force push to the
+fork. Use force-with-lease so the push fails if someone else changed the branch.
+Skip this step if you prefer to leave the history alone; main will still fast-
+forward once upstream merges your pull request, although any merge commit
+already on the fork stays in its history.
+#+BEGIN_SRC bash
+git switch main
+git reset --hard upstream/main
+git push --force-with-lease origin main
+#+END_SRC
+** Rules of Thumb
+*** Never commit on main
+*** Always branch from upstream main for anything destined for a pull request
+*** One pull request per feature branch
+*** Sync main with fast-forward merges only
+*** Keep local-only work on a separate local branch
