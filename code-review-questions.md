@@ -1,0 +1,19 @@
+- Are the names chosen for functions, classes, and variables accurate and representative of their actual purpose?
+- Are there any performance bottlenecks or inefficient memory access patterns introduced in this change?
+- Can you review this specific section for race conditions?
+- Does it functionally achieve what it sets out to (as per ticket issue or PR description)?
+- Does the code meet the team's quality bar?
+- Does this implementation adhere to the established architectural patterns and conventions of the rest of the codebase?
+- Is there already a pattern or code in the existing codebase that handles this functionality?
+- What specific edge cases or boundary conditions might this code fail to handle?
+- Are there any significant problems or better solutions to the underlying problem that can be created?
+- Are there subtle edge cases with hardware (such as graphics hardware memory access patterns or broken functions on specific GPUs) that might be missed?
+- Can you review this specific section for race conditions?
+- Does it functionally achieve what it sets out to (as per ticket issue or PR description)?
+- Does the code correctly handle business and domain logic edge cases according to the requirements?
+- Does the code meet the team's established quality bar?
+- Does the code properly implement required synchronization primitives (like barriers) where necessary?
+- Does the name given to this function, class, or variable accurately represent what it is for?
+- Does this code follow the same patterns that we use in other places across the codebase?
+- Is there already a pattern or code in the existing codebase that handles this functionality?
+- Why are you using this API for this instead of this other one?
